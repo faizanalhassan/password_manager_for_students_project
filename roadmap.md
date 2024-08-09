@@ -1,0 +1,3 @@
+- main.py entrypoint of program
+- PasswordManager
+- PasswordItem

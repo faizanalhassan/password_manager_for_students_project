@@ -1,0 +1,13 @@
+Password Manager:
+- generate_password 
+- add_password(name, category=None, username, password, notes=None)
+-- class PasswordItem
+- list_password()
+- save data to file pickle
+- load data at start of program with fake loader
+- load data with tqdm
+- save data using json
+- fake date seeder
+- list_password(limit=10, page=1)
+- list_password(search_key=None, limit=10, page=1)
+- update_password(id,
