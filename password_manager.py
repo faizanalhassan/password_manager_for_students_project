@@ -1,5 +1,6 @@
 import random
 import pickle
+import psycopg2
 from credential_item import CredentialItem
 
 DATA_FILE_NAME = "credentials.bin"
@@ -10,6 +11,11 @@ class PasswordManager:
         self.number_chars = "0123456789"
         self.symbol_chars = "!@#$%^&*()_+=\/<>"
         self.credential_items = []
+        self.conn = psycopg2.connect(database="password_manager",
+                        host="localhost",
+                        user="postgres",
+                        password="password",
+                        port="5432")
 
     
     def get_bool_input_from_user(self, prompt_substring):
@@ -95,15 +101,17 @@ class PasswordManager:
         print(f"is: {password}")
 
     def add_credential_item(self,  name, username, password, category=None, notes=None):
-        ci = CredentialItem(
-            name=name,
-            username=username,
-            password=password,
-            category=category,
-            notes=notes
-        )
-        self.credential_items.append(ci)
-
+        # ci = CredentialItem(
+        #     name=name,
+        #     username=username,
+        #     password=password,
+        #     category=category,
+        #     notes=notes
+        # )
+        # self.credential_items.append(ci)
+        cusrsor = self.conn.cursor()
+        cusrsor.execute(f"""insert into credential (category_id, "name", username, "password", notes) values (null, '{name}', '{username}', '{password}', '{notes}')""")
+        cusrsor.close()
     def add_credential_item_with_user_input(self):
         name = input("Please enter name for your credential item: ")
         username = input("Please enter username for your credential item: ")
