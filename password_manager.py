@@ -110,8 +110,20 @@ class PasswordManager:
         # )
         # self.credential_items.append(ci)
         cusrsor = self.conn.cursor()
-        cusrsor.execute(f"""insert into credential (category_id, "name", username, "password", notes) values (null, '{name}', '{username}', '{password}', '{notes}')""")
+        cusrsor.execute("select id, name from category where name = %s", (category,))
+        result = cusrsor.fetchone()
+        if result:
+            category_id = result[0]
+        else:
+            cusrsor.execute("insert into category(name) values(%(name)s) RETURNING id;", {"name": category})
+            result_tuple = cusrsor.fetchone()
+            category_id = result_tuple[0]
+        cusrsor.execute("""
+        insert into credential (category_id, "name", username, "password", notes) values (%s, %s, %s, %s, %s);
+        """, (category_id, name, username, password, notes))
+        self.conn.commit()
         cusrsor.close()
+
     def add_credential_item_with_user_input(self):
         name = input("Please enter name for your credential item: ")
         username = input("Please enter username for your credential item: ")
@@ -133,6 +145,34 @@ class PasswordManager:
             print(f"{credential_item.name}\t\t\t{credential_item.username}"
                   f"\t\t\t{credential_item.password}"
                   f"\t\t\t{credential_item.category}\t\t\t{credential_item.notes}")
+            
+    
+    def list_crdentials(self):
+        cusrsor = self.conn.cursor()
+        cusrsor.execute("""
+            select id, name, username, password, category_id, notes
+            from credential;
+        """)
+        credentials_list_of_tuple = cusrsor.fetchall()
+        credentials_list_of_dict = []
+        for credential_tuple in credentials_list_of_tuple:
+            credenital_dict = {
+                "id": credential_tuple[0],
+                "name": credential_tuple[1],
+                "username": credential_tuple[2],
+                "password": credential_tuple[3],
+                "category_id": credential_tuple[4],
+                "notes": credential_tuple[5],
+            }
+            # note: query in loop is very bad approach,we are just doing it for learing purpose, because we haven't learn other ways yet.
+            cusrsor.execute("select id, name from category where id = %s", (credenital_dict["category_id"],))
+            result = cusrsor.fetchone()
+            if result:
+                credenital_dict["category_name"] = result[1]
+            else:
+                credenital_dict["category_name"] = ''
+            credentials_list_of_dict.append(credenital_dict)
+        return credentials_list_of_dict
 
 
 

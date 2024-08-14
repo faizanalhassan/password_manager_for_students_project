@@ -53,7 +53,13 @@ def add_credential():
         category = request.form.get("category")
         notes = request.form.get("notes")
         
-        
+        pm.add_credential_item(name=name, username=username, password=password, notes=notes, category=category)
     return render_template("save_credential_item.html", messages=messages)
+
+
+@flask_app.route("/list_credentials", methods=["GET"])
+def list_credentials():
+    credentials = pm.list_crdentials()
+    return render_template("list_credential.html", credentials=credentials)
 
 flask_app.run(debug=True)
